@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}All Tasks{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4 text-primary"><i class="fas fa-tasks me-2"></i>All Tasks</h1>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <form method="get" class="input-group">
+                <input type="text" class="form-control" name="search" placeholder="Search tasks..." value="{{ request.GET.search }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" name="status" onchange="this.form.submit()" form="filterForm">
+                <option value="">All Statuses</option>
+                <option value="Pending" {% if request.GET.status == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if request.GET.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                <option value="Completed" {% if request.GET.status == "Completed" %}selected{% endif %}>Completed</option>
+                <option value="Cancelled" {% if request.GET.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" name="priority" onchange="this.form.submit()" form="filterForm">
+                <option value="">All Priorities</option>
+                <option value="High" {% if request.GET.priority == "High" %}selected{% endif %}>High</option>
+                <option value="Medium" {% if request.GET.priority == "Medium" %}selected{% endif %}>Medium</option>
+                <option value="Low" {% if request.GET.priority == "Low" %}selected{% endif %}>Low</option>
+            </select>
+        </div>
+    </div>
+    <form id="filterForm" method="get"></form>
+    <h3>Tasks Assigned to You</h3>
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Assigned By</th>
+                            <th>Deadline</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks_to %}
+                        <tr class="{% if task.priority == 'High' %}table-danger{% elif task.priority == 'Medium' %}table-warning{% endif %}">
+                            <td><a href="{% url 'task_detail' task.id %}" class="text-decoration-none">{{ task.title }}</a></td>
+                            <td>{{ task.assigned_by.username }}</td>
+                            <td>{{ task.deadline|date:"M d, Y H:i" }} IST</td>
+                            <td>{{ task.priority }}</td>
+                            <td>{{ task.status }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted">No tasks assigned to you.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <h3>Tasks Assigned by You</h3>
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Assigned To</th>
+                            <th>Deadline</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks_by %}
+                        <tr class="{% if task.priority == 'High' %}table-danger{% elif task.priority == 'Medium' %}table-warning{% endif %}">
+                            <td><a href="{% url 'task_detail' task.id %}" class="text-decoration-none">{{ task.title }}</a></td>
+                            <td>{{ task.assigned_to.username }}</td>
+                            <td>{{ task.deadline|date:"M d, Y H:i" }} IST</td>
+                            <td>{{ task.priority }}</td>
+                            <td>{{ task.status }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted">No tasks assigned by you.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

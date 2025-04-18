@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Super Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4 text-primary"><i class="fas fa-user-shield me-2"></i>Super Admin Dashboard</h1>
+
+    <!-- Task Counts by Priority -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-circle me-2"></i>Tasks by Priority</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for priority, count in priority_counts %}
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'admin_dashboard' %}?priority={{ priority|urlencode }}" class="text-decoration-none">
+                                <div class="card {% if priority == 'High' %}border-danger{% elif priority == 'Medium' %}border-warning{% else %}border-success{% endif %}">
+                                    <div class="card-body text-center">
+                                        <h6 class="{% if priority == 'High' %}text-danger{% elif priority == 'Medium' %}text-warning{% else %}text-success{% endif %}">
+                                            {{ priority }}: {{ count }}
+                                        </h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Counts by User -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Tasks by User</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for user, count in user_counts %}
+                        <div class="col-md-4 mb-3">
+                            <a href="{% url 'admin_dashboard' %}?assigned_to={{ user.id }}" class="text-decoration-none">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <h6 class="text-info">{{ user.username }}: {{ count }}</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtered Tasks Table -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-table me-2"></i>
+                {% if priority_filter %}
+                    Tasks with Priority: {{ priority_filter }}
+                {% elif user_filter %}
+                    Tasks Assigned to: {{ user_filter.username }}
+                {% else %}
+                    All Tasks
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="taskTable">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Assigned To</th>
+                            <th>Assigned By</th>
+                            <th>Deadline</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr class="{% if task.priority == 'High' %}table-danger{% elif task.priority == 'Medium' %}table-warning{% endif %}">
+                            <td><a href="{% url 'task_detail' task.id %}" class="text-decoration-none">{{ task.title }}</a></td>
+                            <td>{{ task.assigned_to.username }}</td>
+                            <td>{{ task.assigned_by.username }}</td>
+                            <td>{{ task.deadline|date:"M d, Y H:i" }} IST</td>
+                            <td>{{ task.priority }}</td>
+                            <td>{{ task.status }}</td>
+                            <td>
+                                <form method="post" action="{% url 'delete_task' task.id %}" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash me-1"></i>Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-muted">No tasks available.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{% url 'export_tasks_csv' %}" class="btn btn-success hover-scale mt-3"><i class="fas fa-file-csv me-2"></i>Export CSV</a>
+            {% if priority_filter or user_filter %}
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary hover-scale mt-3"><i class="fas fa-undo me-2"></i>Show All Tasks</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

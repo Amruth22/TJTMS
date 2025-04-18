@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4 text-primary"><i class="fas fa-task me-2"></i>{{ task.title }}</h1>
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <ul class="nav nav-tabs" id="taskTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#info" role="tab"><i class="fas fa-info-circle me-2"></i>Info</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="comments-tab" data-bs-toggle="tab" href="#comments" role="tab"><i class="fas fa-comments me-2"></i>Comments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="attachments-tab" data-bs-toggle="tab" href="#attachments" role="tab"><i class="fas fa-paperclip me-2"></i>Attachments</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="history-tab" data-bs-toggle="tab" href="#history" role="tab"><i class="fas fa-history me-2"></i>History</a>
+                </li>
+            </ul>
+            <div class="tab-content mt-3" id="taskTabsContent">
+                <div class="tab-pane fade show active" id="info" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-align-left me-2"></i>Description:</strong> {{ task.description|default:"No description" }}</p>
+                            <p><strong><i class="fas fa-user me-2"></i>Assigned To:</strong> {{ task.assigned_to.username }}</p>
+                            <p><strong><i class="fas fa-user-edit me-2"></i>Assigned By:</strong> {{ task.assigned_by.username }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-user-plus me-2"></i>Created By:</strong> {{ task.created_by.username }}</p>
+                            <p><strong><i class="fas fa-calendar-alt me-2"></i>Deadline:</strong> {{ task.deadline|date:"M d, Y H:i" }} IST</p>
+                            <p><strong><i class="fas fa-exclamation-circle me-2"></i>Priority:</strong> 
+                                <span class="{% if task.priority == 'High' %}text-danger{% elif task.priority == 'Medium' %}text-warning{% else %}text-success{% endif %}">
+                                    {{ task.priority }}
+                                </span>
+                            </p>
+                            <p><strong><i class="fas fa-tasks me-2"></i>Status:</strong> {{ task.status }}</p>
+                        </div>
+                    </div>
+                    <h4 class="mt-4">Update Task</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="update" value="1">
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4">{{ task.description }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="Pending" {% if task.status == "Pending" %}selected{% endif %}>Pending</option>
+                                    <option value="In Progress" {% if task.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                                    <option value="Completed" {% if task.status == "Completed" %}selected{% endif %}>Completed</option>
+                                    <option value="Cancelled" {% if task.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="priority" class="form-label">Priority</label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="High" {% if task.priority == "High" %}selected{% endif %} class="text-danger">High</option>
+                                    <option value="Medium" {% if task.priority == "Medium" %}selected{% endif %} class="text-warning">Medium</option>
+                                    <option value="Low" {% if task.priority == "Low" %}selected{% endif %} class="text-success">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="assigned_to" class="form-label">Assign To</label>
+                                <select class="form-select" id="assigned_to" name="assigned_to">
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}" {% if user == task.assigned_to %}selected{% endif %}>{{ user.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="deadline_date" class="form-label">Deadline Date</label>
+                                <input type="date" class="form-control" id="deadline_date" name="deadline_date" value="{{ task.deadline|date:'Y-m-d' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="deadline_time" class="form-label">Deadline Time (Optional)</label>
+                                <input type="time" class="form-control" id="deadline_time" name="deadline_time" value="{% if task.deadline.time.hour != 0 or task.deadline.time.minute != 0 %}{{ task.deadline|time:'H:i' }}{% endif %}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary hover-scale"><i class="fas fa-save me-2"></i>Update Task</button>
+                    </form>
+                </div>
+                <div class="tab-pane fade" id="comments" role="tabpanel">
+                    <h4>Add Comment</h4>
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="comment" value="1">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Write a comment..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-secondary hover-scale"><i class="fas fa-comment-dots me-2"></i>Post Comment</button>
+                    </form>
+                    {% for comment in task.comments.all %}
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-body">
+                            <p class="card-text">{{ comment.comment }}</p>
+                            <p class="card-subtitle text-muted"><small><i class="fas fa-user me-2"></i>{{ comment.user.username }} on {{ comment.created_at|date:"M d, Y H:i" }} IST</small></p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No comments yet.</p>
+                    {% endfor %}
+                </div>
+                <div class="tab-pane fade" id="attachments" role="tabpanel">
+                    <h4>Upload Attachment</h4>
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="attachment" value="1">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="file" name="file" required>
+                        </div>
+                        <button type="submit" class="btn btn-secondary hover-scale"><i class="fas fa-upload me-2"></i>Upload</button>
+                    </form>
+                    {% for attachment in task.attachments.all %}
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            {% if attachment.file.name|lower|slice:"-4:" in ".jpg,.png,.jpeg" %}
+                            <img src="{{ attachment.file.url }}" alt="Attachment" class="img-thumbnail me-3" style="max-width: 100px;">
+                            {% else %}
+                            <i class="fas fa-file fa-2x me-3 text-muted"></i>
+                            {% endif %}
+                            <div>
+                                <a href="{{ attachment.file.url }}" target="_blank" class="text-decoration-none">{{ attachment.file.name|cut:"attachments/" }}</a>
+                                <p class="text-muted"><small><i class="fas fa-user me-2"></i>{{ attachment.uploaded_by.username }} on {{ attachment.created_at|date:"M d, Y H:i" }} IST</small></p>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No attachments yet.</p>
+                    {% endfor %}
+                </div>
+                <div class="tab-pane fade" id="history" role="tabpanel">
+                    <h4>Task History</h4>
+                    {% for history in task.history.all %}
+                    <div class="timeline-item mb-3">
+                        <div class="timeline-icon bg-primary text-white"><i class="fas fa-history"></i></div>
+                        <div class="timeline-content card shadow-sm p-3">
+                            <p class="mb-0"><strong>{{ history.assigned_to.username }}</strong> - {{ history.status }} by {{ history.assigned_by.username }}</p>
+                            <p class="text-muted"><small>{{ history.timestamp|date:"M d, Y H:i" }} IST</small></p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No history yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

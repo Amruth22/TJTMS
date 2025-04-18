@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Create Task{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4 text-primary"><i class="fas fa-plus-circle me-2"></i>Create Task</h1>
+    <div class="card shadow p-4">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="title" class="form-label"><i class="fas fa-heading me-2"></i>Title</label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="Enter task title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label"><i class="fas fa-align-left me-2"></i>Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter task description"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="assigned_to" class="form-label"><i class="fas fa-user me-2"></i>Assign To</label>
+                    <select class="form-select" id="assigned_to" name="assigned_to" required>
+                        <option value="" disabled selected>Select a user</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="deadline_date" class="form-label" title="Select the deadline date"><i class="fas fa-calendar-alt me-2"></i>Deadline Date</label>
+                        <input type="date" class="form-control" id="deadline_date" name="deadline_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="deadline_time" class="form-label" title="Select the deadline time (defaults to 11:00 PM IST)"><i class="fas fa-clock me-2"></i>Deadline Time (Optional)</label>
+                        <input type="time" class="form-control" id="deadline_time" name="deadline_time" value="23:00">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="priority" class="form-label"><i class="fas fa-exclamation-circle me-2"></i>Priority</label>
+                    <select class="form-select" id="priority" name="priority" required>
+                        <option value="High" class="text-danger">High</option>
+                        <option value="Medium" class="text-warning" selected>Medium</option>
+                        <option value="Low" class="text-success">Low</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary hover-scale"><i class="fas fa-save me-2"></i>Create Task</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
