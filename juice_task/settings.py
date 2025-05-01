@@ -78,7 +78,7 @@ WSGI_APPLICATION = "juice_task.wsgi.application"
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgres://postgres:your_local_password@localhost:5432/juice_db',
+        default='postgresql://juice_db_drbd_user:XrWKZI7n0vehFTaQ22PTYYo3krPrOE7h@dpg-d02kg93e5dus73bt74ng-a.oregon-postgres.render.com/juice_db_drbd',
         conn_max_age=600,
         ssl_require=not DEBUG  # Require SSL in production
     )
