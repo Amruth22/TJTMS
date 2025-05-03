@@ -28,9 +28,9 @@ This guide will help you migrate the TJTMS application from Render's PostgreSQL 
 
 ## Step 2: Install Required Dependencies
 
-1. Install the MySQL client for Python:
+1. Install PyMySQL for Python:
    ```bash
-   pip install mysqlclient
+   pip install PyMySQL
    ```
    
    Or install all requirements:
@@ -136,3 +136,12 @@ If you have any media files (attachments) in your Render deployment, make sure t
 4. **Character Encoding Issues**:
    - Ensure your MySQL database is using utf8mb4 encoding
    - Check that the data was properly encoded in the original database
+
+### PyMySQL vs mysqlclient
+
+This project uses PyMySQL instead of mysqlclient because:
+- It's a pure Python package, so it doesn't require any C compiler or MySQL development headers
+- It's easier to install on various platforms
+- It provides similar functionality to mysqlclient
+
+If you encounter any performance issues, you might consider switching to mysqlclient which is generally faster but requires more complex installation.
