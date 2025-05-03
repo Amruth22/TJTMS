@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -78,11 +80,11 @@ WSGI_APPLICATION = "juice_task.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'juice_task_db',  # Your database name
-        'USER': 'root',           # Your MySQL username
-        'PASSWORD': 'Aamruth@22', # Password you just set
-        'HOST': 'localhost',      # Host where MySQL is running
-        'PORT': '3306',           # Default MySQL port
+        'NAME': 'juice_task_db',
+        'USER': 'root',
+        'PASSWORD': 'Aamruth@22',
+        'HOST': 'localhost',
+        'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
