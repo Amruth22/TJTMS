@@ -16,7 +16,8 @@ gunicorn==23.0.0
 kombu==5.3.7
 packaging==24.2
 prompt_toolkit==3.0.51
-psycopg2-binary==2.9.10
+PyMySQL==1.1.0  # Added PyMySQL instead of mysqlclient
+# psycopg2-binary==2.9.10  # Commented out as we're not using PostgreSQL
 python-crontab==3.2.0
 python-dateutil==2.9.0.post0
 pytz==2025.2

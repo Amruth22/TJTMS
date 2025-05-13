@@ -11,8 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
-import dj_database_url
 from pathlib import Path
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,11 +78,18 @@ WSGI_APPLICATION = "juice_task.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://juice_db_drbd_user:XrWKZI7n0vehFTaQ22PTYYo3krPrOE7h@dpg-d02kg93e5dus73bt74ng-a.oregon-postgres.render.com/juice_db_drbd',
-        conn_max_age=600,
-        ssl_require=not DEBUG  # Require SSL in production
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'juice_task_db',
+        'USER': 'root',
+        'PASSWORD': 'Aamruth@22',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
+    }
 }
 
 

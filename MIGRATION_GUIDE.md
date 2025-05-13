@@ -1,0 +1,147 @@
+# PostgreSQL to MySQL Migration Guide
+
+This guide will help you migrate the TJTMS application from Render's PostgreSQL database to a local MySQL server.
+
+## Prerequisites
+
+- MySQL server installed and running
+- Python 3.x installed
+- Git installed
+
+## Step 1: Set up the MySQL Database
+
+1. Log in to MySQL:
+   ```bash
+   mysql -u root -p
+   ```
+   (Enter your password: `Aamruth@22`)
+
+2. Create a new database:
+   ```sql
+   CREATE DATABASE juice_task_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
+3. Exit MySQL:
+   ```sql
+   EXIT;
+   ```
+
+## Step 2: Install Required Dependencies
+
+1. Install PyMySQL for Python:
+   ```bash
+   pip install PyMySQL
+   ```
+   
+   Or install all requirements:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Step 3: Migrate the Data
+
+There are two approaches to migrate the data. Choose the one that works best for you:
+
+### Option A: Using Django's Migration System (Recommended)
+
+1. Set up a temporary PostgreSQL database locally:
+   ```bash
+   createdb temp_juice_db
+   ```
+
+2. Import the PostgreSQL dump:
+   ```bash
+   psql temp_juice_db < juice_db_backup.sql
+   ```
+
+3. Temporarily modify settings.py to use the local PostgreSQL database:
+   ```python
+   DATABASES = {
+       'default': {
+           'ENGINE': 'django.db.backends.postgresql',
+           'NAME': 'temp_juice_db',
+           'USER': 'postgres',
+           'PASSWORD': 'your_postgres_password',
+           'HOST': 'localhost',
+           'PORT': '5432',
+       }
+   }
+   ```
+
+4. Create a JSON fixture of all data:
+   ```bash
+   python manage.py dumpdata --exclude contenttypes --exclude auth.permission > all_data.json
+   ```
+
+5. Change back to the MySQL configuration (already done in this branch)
+
+6. Run migrations to create the schema in MySQL:
+   ```bash
+   python manage.py migrate
+   ```
+
+7. Load the fixture into MySQL:
+   ```bash
+   python manage.py loaddata all_data.json
+   ```
+
+### Option B: Using a Direct SQL Conversion
+
+This approach is more complex and may require manual adjustments to the SQL:
+
+1. Use a tool like [pgloader](https://github.com/dimitri/pgloader) to migrate directly:
+   ```bash
+   pgloader postgresql://juice_db_drbd_user:XrWKZI7n0vehFTaQ22PTYYo3krPrOE7h@dpg-d02kg93e5dus73bt74ng-a.oregon-postgres.render.com/juice_db_drbd mysql://root:Aamruth@22@localhost/juice_task_db
+   ```
+
+   Or use a conversion script like [pg2mysql](https://github.com/ChrisLundquist/pg2mysql) to convert the dump:
+   ```bash
+   pg2mysql juice_db_backup.sql > mysql_dump.sql
+   mysql -u root -p juice_task_db < mysql_dump.sql
+   ```
+
+## Step 4: Test the Application
+
+1. Run the Django development server:
+   ```bash
+   python manage.py runserver
+   ```
+
+2. Visit http://127.0.0.1:8000/ in your browser
+
+3. Test all functionality to ensure the migration was successful
+
+## Step 5: Copy Media Files
+
+If you have any media files (attachments) in your Render deployment, make sure to copy them to your local environment:
+
+1. Download the files from Render
+2. Place them in the appropriate directory (e.g., `media/attachments/`)
+
+## Troubleshooting
+
+### Common Issues
+
+1. **MySQL Connection Errors**:
+   - Ensure MySQL server is running
+   - Verify username and password in settings.py
+   - Check that the database exists
+
+2. **Migration Errors**:
+   - If you encounter errors during `python manage.py migrate`, try running `python manage.py makemigrations` first
+
+3. **Data Import Issues**:
+   - If you have issues with the JSON fixture, try excluding problematic apps: `python manage.py dumpdata --exclude contenttypes --exclude auth.permission --exclude sessions > all_data.json`
+
+4. **Character Encoding Issues**:
+   - Ensure your MySQL database is using utf8mb4 encoding
+   - Check that the data was properly encoded in the original database
+
+### PyMySQL vs mysqlclient
+
+This project uses PyMySQL instead of mysqlclient because:
+- It's a pure Python package, so it doesn't require any C compiler or MySQL development headers
+- It's easier to install on various platforms
+- It provides similar functionality to mysqlclient
+
+If you encounter any performance issues, you might consider switching to mysqlclient which is generally faster but requires more complex installation.
